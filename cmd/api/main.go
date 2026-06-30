@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"faro/backend/internal/config"
-	"faro/backend/internal/db"
-	"faro/backend/internal/server"
+	"faro/internal/config"
+	"faro/internal/db"
+	"faro/internal/server"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
-		Handler:           server.New(pool),
+		Handler:           server.New(pool, cfg.CORSOrigin),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

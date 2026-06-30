@@ -2,16 +2,16 @@
 
 # Backend
 run:        ## Levanta la API en local
-	cd backend && go run ./cmd/api
+go run ./cmd/api
 
 build:      ## Compila el backend
-	cd backend && go build ./...
+go build ./...
 
 test:       ## Tests del backend
-	cd backend && go test ./...
+go test ./...
 
 vet:        ## go vet
-	cd backend && go vet ./...
+go vet ./...
 
 # Entorno local (Docker)
 up:         ## Levanta Postgres + backend
@@ -22,7 +22,7 @@ down:       ## Detiene el entorno local
 
 # Migraciones (requieren DATABASE_URL en el entorno)
 migrate-up:
-	psql "$(DATABASE_URL)" -f backend/migrations/0001_init.up.sql
+	psql "$(DATABASE_URL)" -f migrations/0001_init.up.sql
 
 migrate-down:
-	psql "$(DATABASE_URL)" -f backend/migrations/0001_init.down.sql
+	psql "$(DATABASE_URL)" -f migrations/0001_init.down.sql

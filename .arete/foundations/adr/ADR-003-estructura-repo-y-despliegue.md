@@ -1,5 +1,5 @@
 # ADR-003 — Estructura de repositorio y estrategia de despliegue
-_Fecha: 2026-06-29 · Estado: aceptado_
+_Fecha: 2026-06-29 · Estado: **reemplazado por ADR-004** (se decidió separar back/front en repos distintos desde el MVP, no monorepo)_
 
 ## Contexto
 Faro es un SaaS multi-negocio (Go API + Next.js) con un MVP a 4 días y equipo pequeño. Hay que decidir: (1) ¿microservicios o monolito? y (2) ¿monorepo (back+front juntos) o repos separados? Estas decisiones definen la estructura de carpetas, el CI/CD y el modelo de despliegue.

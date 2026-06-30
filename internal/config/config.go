@@ -8,6 +8,7 @@ type Config struct {
 	Port        string
 	DatabaseURL string
 	JWTSecret   string
+	CORSOrigin  string // origen del frontend (faro-ui) permitido por CORS
 }
 
 // Load lee la configuración del entorno con valores por defecto para desarrollo.
@@ -16,6 +17,7 @@ func Load() Config {
 		Port:        getenv("PORT", "8080"),
 		DatabaseURL: getenv("DATABASE_URL", "postgres://faro:faro@localhost:5432/faro?sslmode=disable"),
 		JWTSecret:   getenv("JWT_SECRET", "dev-insecure-secret-change-me"),
+		CORSOrigin:  getenv("CORS_ORIGIN", "http://localhost:3000"),
 	}
 }
 

@@ -17,25 +17,27 @@ Aplicación web **multi-negocio (multi-tenant)** para administración de cafeter
 | Base de datos | PostgreSQL (Neon en prod) | Persistencia con aislamiento por negocio | backend-engineer |
 | Plataforma | Docker + GitHub Actions + Fly.io | Build, deploy, runtime | devops-engineer |
 
-## Estructura de repo y despliegue (decisión base — ver ADR-003)
-- **Monolito modular** en Go: un solo servicio con módulos internos (`auth`, `products`, `sales`, `loyalty`), **no microservicios**.
-- **Monorepo:** un único repo `faro` con `backend/` y `frontend/`, desplegados como dos imágenes Docker.
+## Estructura de repos y despliegue (decisión base — ver ADR-004, reemplaza ADR-003)
+**Dos repositorios separados desde el MVP**, comunicados por **HTTP (REST/JSON)**:
+- **`faro`** (este repo) = **backend** Go, monolito modular (código en la **raíz**). Aloja las specs `.arete/`.
+- **`faro-ui`** = **frontend** Next.js.
 
 ```
-faro/
-├── backend/                 # Go (monolito modular)
-│   ├── cmd/api/             # entrypoint del servidor
-│   ├── internal/<modulo>/   # auth, products, sales, loyalty (límites estrictos)
-│   ├── migrations/
-│   └── Dockerfile
-├── frontend/                # Next.js (App Router, TS, Tailwind)
-│   └── Dockerfile
-├── docker-compose.yml       # local: backend + frontend + Postgres
-├── fly.backend.toml · fly.frontend.toml
-└── .arete/                  # specs del harness
+faro/  (backend)                     faro-ui/  (frontend)
+├── cmd/api/                         ├── app/            # Next.js App Router
+├── internal/<modulo>/  auth,…       ├── lib/api         # cliente HTTP del backend
+├── migrations/                      ├── Dockerfile
+├── Dockerfile                       └── .env.local      # NEXT_PUBLIC_API_URL
+├── docker-compose.yml  (db + api)
+└── .arete/  (specs del producto)
+
+   faro-ui  ──HTTP/JSON (cookie de sesión httpOnly)──►  faro (API)
 ```
-> Cada módulo es un paquete interno con frontera clara, para poder extraer un microservicio en el futuro si hiciera falta. Reversible hacia servicios; no al revés.
-> **Plan futuro:** separar `frontend/` a su propio repo. Por eso `backend/` y `frontend/` se mantienen **desacoplados** (sin imports cruzados; acoplados solo por el contrato de API), para que el split sea barato y conserve historia.
+
+- **Comunicación:** el frontend consume la API por HTTP. El backend habilita **CORS** para el origen del frontend con `AllowCredentials` (la sesión viaja en cookie httpOnly).
+- **Cookies cross-origin:** en prod, back y front bajo el **mismo sitio registrable** (ej. `api.faro.app` / `app.faro.app`) para que `SameSite=Lax` funcione; si quedaran en sitios distintos, la cookie debe ser `SameSite=None; Secure` (definir en `runbook.md` al desplegar).
+- **Monolito modular** en el backend: módulos internos (`auth`, `products`, `sales`, `loyalty`), no microservicios. CI/CD y despliegue **independientes** por repo.
+> El **contrato de API es la frontera** entre los dos repos; se versiona y ninguno importa código del otro.
 
 ## Multi-tenancy (decisión base — ver ADR-001)
 - **Modelo:** base de datos compartida, esquema compartido, columna **`tenant_id`** en las tablas con datos de negocio.

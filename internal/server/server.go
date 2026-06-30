@@ -7,16 +7,28 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // New construye el handler HTTP raíz. Los módulos (auth, products, …) montarán
-// aquí sus sub-routers en incrementos siguientes.
-func New(pool *pgxpool.Pool) http.Handler {
+// aquí sus sub-routers en incrementos siguientes. corsOrigin es el origen del
+// frontend (faro-ui) autorizado a consumir la API con credenciales.
+func New(pool *pgxpool.Pool, corsOrigin string) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+
+	// CORS para el frontend (faro-ui), que vive en otro origen.
+	// AllowCredentials=true para que viaje la cookie de sesión httpOnly.
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{corsOrigin},
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
 
 	// Liveness: el proceso está vivo.
 	r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {

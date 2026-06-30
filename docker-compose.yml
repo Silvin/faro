@@ -1,5 +1,5 @@
-# Entorno LOCAL de Faro: Postgres + backend (Go).
-# El frontend (Next.js) se añade en el siguiente incremento de Fase B.
+# Entorno LOCAL del backend de Faro: Postgres + API (Go).
+# El frontend vive en el repo faro-ui (se corre por separado con su propio dev/compose).
 services:
   db:
     image: postgres:16-alpine
@@ -18,11 +18,12 @@ services:
       retries: 10
 
   backend:
-    build: ./backend
+    build: .
     environment:
       PORT: "8080"
       DATABASE_URL: "postgres://faro:faro@db:5432/faro?sslmode=disable"
       JWT_SECRET: "dev-insecure-secret-change-me"
+      CORS_ORIGIN: "http://localhost:3000"
     ports:
       - "8080:8080"
     depends_on:
