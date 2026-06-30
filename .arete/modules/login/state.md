@@ -22,11 +22,16 @@ _Estados de gate: ⬜ pendiente · 🟡 en curso · ✅ cumplido · 🔴 bloquea
 - Multi-tenant (multi-negocio) con super admin global — ver ADR-001.
 - Auth v1: **solo email + password** (sin PIN, sin roles) — ver ADR-002.
 - Sesión: JWT en cookie httpOnly; password con bcrypt.
+- **Repos separados desde el MVP** (ADR-004, reemplaza ADR-003): `faro` = backend, `faro-ui` = frontend, comunicación HTTP + CORS (cookie con credentials).
 
 ## Aportes a foundations
 - `architecture.md` (base + multi-tenancy + auth) — NACIÓ con este módulo.
 - `design-system.md` v0.3 (paleta **lime BrightPOS** + Inter/Poppins + app shell top bar/sidebar agrupado + componentes) — NACIÓ.
 - `adr/ADR-001-multi-tenancy.md`, `adr/ADR-002-auth-sesion.md`.
 
-## Siguiente
-Tras tu OK al checkpoint → **Fase B** (build: T1–T10) cuando lo autorices.
+## Progreso Fase B
+- ✅ Skeleton backend (`faro`): server, config, db, /health, /ready, CORS.
+- ✅ T1 migración tenants/users (up/down).
+- ✅ Baseline frontend (`faro-ui`): Next.js + Tailwind (BrightPOS) + cliente HTTP.
+- ⬜ **Siguiente (backend `faro`):** T2 seed super admin → T3 auth core (bcrypt+JWT) → T4 /auth + middleware tenant, con tests.
+- ⬜ Frontend (`faro-ui`): T7 shell → T8 login → T9 sesión → T10 provisión.
