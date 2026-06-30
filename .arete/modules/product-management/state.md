@@ -4,6 +4,11 @@ _Actualizado: 2026-06-30_
 ## Etapa actual
 👁 review ✅ — código completo (P1–P5) + E2E + **QA PASS + review approve**. Pendiente: deploy (Fase C).
 
+## Ajustes (2026-06-30) — validados E2E
+- **Imágenes de producto:** columna `products.image_url` (migración 0005) + módulo `internal/uploads` (POST /uploads, sirve en /files/); subida en crear/editar.
+- **Pantallas separadas:** `/products` (listado + **buscador** + miniatura + **categoría**), `/products/new`, `/products/[id]/edit`.
+- Nuevo endpoint `GET /products/{id}` para la pantalla de edición.
+
 ## Pipeline (gates)
 | # | Etapa | Dueño | Gate | Estado |
 |---|-------|-------|------|--------|

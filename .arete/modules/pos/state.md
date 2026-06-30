@@ -16,6 +16,9 @@ _Actualizado: 2026-06-30_
 | 7 | Review | code-reviewer | approve | ✅ **approve** — `reviews/review.md` |
 | 8 | Deploy | devops-engineer | desplegado + observable | ⬜ |
 
+## Ajustes (2026-06-30) — validados E2E
+- POS **tablet-friendly**: **tabs de categorías** (clic en categoría → sus productos), **buscador** en vivo y **imágenes** en el catálogo.
+
 ## Decisión clave
 - **El backend calcula el total** con los precios de SUS productos (no confía en el cliente) → seguridad.
 - Snapshot de nombre y precio por línea al momento de la venta (histórico inmutable).
