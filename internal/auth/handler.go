@@ -28,8 +28,9 @@ func (svc *Service) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// T6: rate limiting anti fuerza bruta (por IP + email).
-	if !svc.loginLimiter.allow(clientIP(r) + "|" + req.Email) {
+	// T6: rate limiting anti fuerza bruta (por IP+email) y anti credential stuffing (por IP).
+	ip := clientIP(r)
+	if !svc.loginLimiter.allow(ip+"|"+req.Email) || !svc.ipLimiter.allow(ip) {
 		writeError(w, http.StatusTooManyRequests, "rate_limited", "Demasiados intentos, espera un momento")
 		return
 	}

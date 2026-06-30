@@ -1,8 +1,8 @@
 # Estado — Módulo login
-_Actualizado: 2026-06-29_
+_Actualizado: 2026-06-30_
 
 ## Etapa actual
-🔨 in-dev (Fase B) — skeleton del monorepo + migración (T1) listos y compilando (build/vet verdes)
+👁 review ✅ — **código completo + QA PASS + review approve.** Listo para deploy (Fase C); solo falta desplegar.
 
 ## Pipeline (gates)
 | # | Etapa | Dueño | Gate | Estado |
@@ -12,8 +12,8 @@ _Actualizado: 2026-06-29_
 | 3 | Tech-spec | tech-lead | contratos definidos | ✅ |
 | 4 | Tareas | project-manager | tareas atómicas | ✅ |
 | 5 | Build | backend/frontend | tests verdes | ✅ **T1–T10 completos** (backend `faro` + frontend `faro-ui`); builds y unit tests verdes |
-| 6 | QA | qa-engineer | gate PASS | ⬜ (Fase B) |
-| 7 | Review | code-reviewer | approve | ⬜ (Fase B) |
+| 6 | QA | qa-engineer | gate PASS | ✅ **PASS** — `qa/test-plan.md` (10/10 tests + E2E) |
+| 7 | Review | code-reviewer | approve | ✅ **approve** — `reviews/review.md` (hallazgos de seguridad resueltos) |
 | 8 | Deploy | devops-engineer | desplegado + observable | ⬜ (Fase C) |
 
 _Estados de gate: ⬜ pendiente · 🟡 en curso · ✅ cumplido · 🔴 bloqueado_
@@ -45,6 +45,9 @@ _Estados de gate: ⬜ pendiente · 🟡 en curso · ✅ cumplido · 🔴 bloquea
 - ✅ **T10 provisión** (`/users` listar+crear, `/tenants/new` super admin).
 - 🎉 **Login COMPLETO en código (T1–T10), backend + frontend, build verificado en ambos repos.**
 - ✅ **Validación local (2026-06-30):** suite de integración VERDE contra Postgres real (incl. aislamiento entre negocios); flujo HTTP E2E con curl OK — login→cookie→/me, crear negocio, login dueño, crear usuario, scoping por negocio, 401 (pass mala), 403 (dueño crea negocio), 429 (rate limit); **CORS cross-origin** (`:3000`→`:8080`) con `Allow-Credentials` y `Set-Cookie` verificado.
-- ⬜ **Pendiente:** confirmación visual en navegador; gates formales de QA (test-plan) y review; luego Fase C (deploy Fly.io + Neon).
+- ✅ **Responsive** validado en teléfono (sidebar colapsable / drawer).
+- ✅ **QA (gate 6) PASS** + **Review (gate 7) approve** — ver `qa/test-plan.md` y `reviews/review.md`.
+- ✅ Fixes de review aplicados: rate limit por IP (anti credential stuffing) + advertencia de JWT_SECRET por defecto + test de logout.
+- ⬜ **Pendiente único:** Fase C — deploy a Fly.io + Neon (gate 8).
 
-> Verificado local: `go build`, `go vet`, unit tests (bcrypt+JWT) ✅. Integración pendiente de correr en CI/Docker (no había daemon en el entorno de desarrollo).
+> Suite de integración (10/10) verde contra Postgres real; `go build`/`go vet`/`tsc` verdes. Tras Fase C, el módulo login queda ✅ done.

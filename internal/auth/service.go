@@ -17,7 +17,8 @@ type Service struct {
 	store        *store
 	tokens       *tokenManager
 	cookieSecure bool
-	loginLimiter *rateLimiter
+	loginLimiter *rateLimiter // por IP+email: frena fuerza bruta contra una cuenta
+	ipLimiter    *rateLimiter // por IP: frena credential stuffing (muchos emails desde una IP)
 }
 
 // NewService construye el servicio de auth.
@@ -26,7 +27,8 @@ func NewService(pool *pgxpool.Pool, jwtSecret string, sessionTTL time.Duration, 
 		store:        newStore(pool),
 		tokens:       newTokenManager(jwtSecret, sessionTTL),
 		cookieSecure: cookieSecure,
-		loginLimiter: newRateLimiter(5, time.Minute), // T6: 5 intentos/min por IP+email
+		loginLimiter: newRateLimiter(5, time.Minute),  // T6: 5/min por IP+email
+		ipLimiter:    newRateLimiter(20, time.Minute), // T6: 20/min por IP
 	}
 }
 

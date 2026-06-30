@@ -19,6 +19,9 @@ import (
 
 func main() {
 	cfg := config.Load()
+	if cfg.UsesDefaultJWTSecret() {
+		log.Println("ADVERTENCIA: usando JWT_SECRET por defecto (inseguro). Define JWT_SECRET en producción.")
+	}
 
 	pool, err := db.Connect(context.Background(), cfg.DatabaseURL)
 	if err != nil {

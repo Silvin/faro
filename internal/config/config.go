@@ -3,6 +3,10 @@ package config
 
 import "os"
 
+// defaultJWTSecret es un valor inseguro solo para desarrollo. En producción
+// DEBE definirse JWT_SECRET con un secreto fuerte.
+const defaultJWTSecret = "dev-insecure-secret-change-me"
+
 // Config agrupa la configuración de runtime del servicio.
 type Config struct {
 	Port               string
@@ -19,13 +23,18 @@ func Load() Config {
 	return Config{
 		Port:        getenv("PORT", "8080"),
 		DatabaseURL: getenv("DATABASE_URL", "postgres://faro:faro@localhost:5432/faro?sslmode=disable"),
-		JWTSecret:   getenv("JWT_SECRET", "dev-insecure-secret-change-me"),
+		JWTSecret:   getenv("JWT_SECRET", defaultJWTSecret),
 		CORSOrigin:  getenv("CORS_ORIGIN", "http://localhost:3000"),
 
 		CookieSecure:       getbool("COOKIE_SECURE", false),
 		SuperAdminEmail:    getenv("FARO_SUPERADMIN_EMAIL", ""),
 		SuperAdminPassword: getenv("FARO_SUPERADMIN_PASSWORD", ""),
 	}
+}
+
+// UsesDefaultJWTSecret indica si se está usando el secreto inseguro por defecto.
+func (c Config) UsesDefaultJWTSecret() bool {
+	return c.JWTSecret == defaultJWTSecret
 }
 
 func getbool(key string, fallback bool) bool {

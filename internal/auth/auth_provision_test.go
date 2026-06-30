@@ -65,6 +65,35 @@ func usersCount(t *testing.T, c *http.Client, base string) int {
 	return len(body.Items)
 }
 
+func TestLogoutInvalidatesSession(t *testing.T) {
+	svc, pool := testService(t)
+	defer pool.Close()
+	if _, err := svc.SeedSuperAdmin(context.Background(), "admin@faro.test", "secret123"); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	srv := httptest.NewServer(fullRouter(svc))
+	defer srv.Close()
+	c := jarClient(t)
+
+	login(t, c, srv.URL, "admin@faro.test", "secret123")
+
+	// Con sesión: /me = 200.
+	if resp, err := c.Get(srv.URL + "/auth/me"); err != nil || resp.StatusCode != http.StatusOK {
+		t.Fatalf("/me con sesión: esperaba 200, obtuvo %v", resp.StatusCode)
+	}
+
+	// Logout = 204 y limpia la cookie.
+	if resp := post(t, c, srv.URL+"/auth/logout", map[string]string{}); resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("logout: esperaba 204, obtuvo %d", resp.StatusCode)
+	}
+
+	// Tras logout: /me = 401.
+	if resp, err := c.Get(srv.URL + "/auth/me"); err != nil || resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("/me tras logout: esperaba 401, obtuvo %v", resp.StatusCode)
+	}
+}
+
 func TestProvisioningAndTenantIsolation(t *testing.T) {
 	svc, pool := testService(t)
 	defer pool.Close()
