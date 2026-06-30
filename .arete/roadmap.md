@@ -9,7 +9,7 @@ Sistematizar los procesos clave de una cafetería (productos, ventas, reportes, 
 |----|-----------------------|-----------------------------------------------------------------------------|------------|-------|------------|
 | M1 | login                 | Autenticación de usuarios (sin roles en v1)                                  | 👁 review ✅ (pre-deploy) | 1 | — |
 | M2 | category-management   | CRUD de categorías de producto                                              | 👁 review ✅ (pre-deploy) | 2 | M1 |
-| M3 | product-management    | CRUD de productos (precio, categoría, estado)                               | 💡 idea    | 3     | M2         |
+| M3 | product-management    | CRUD de productos (precio, categoría, estado)                               | 👁 review ✅ (pre-deploy) | 3 | M2 |
 | M4 | pos                   | Comanda/venta, agregar productos, cobro con cálculo de cambio, ticket       | 💡 idea    | 4     | M3         |
 | M5 | sales-reports         | Reportes diarios y por periodo, agrupados por categoría y horario           | 💡 idea    | 5     | M4         |
 | M6 | loyalty               | Alta por teléfono, puntos, tarjeta QR wallet iOS/Android, WhatsApp, redención| 💡 idea    | 6     | M3, M4     |
