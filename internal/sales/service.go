@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -43,8 +44,8 @@ func (svc *Service) Create(ctx context.Context, tenantID string, items []LineInp
 	return svc.store.createSale(ctx, tenantID, items, paymentMethod, amountPaidCents, customerID)
 }
 
-func (svc *Service) List(ctx context.Context, tenantID string) ([]Sale, error) {
-	return svc.store.listByTenant(ctx, tenantID)
+func (svc *Service) List(ctx context.Context, tenantID string, from, to *time.Time) ([]Sale, error) {
+	return svc.store.listByTenant(ctx, tenantID, from, to)
 }
 
 func (svc *Service) Get(ctx context.Context, tenantID, id string) (Sale, error) {

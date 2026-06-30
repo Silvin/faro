@@ -129,8 +129,8 @@ func TestGetAndIsolation(t *testing.T) {
 		t.Fatalf("get cross-tenant: esperaba ErrNotFound, obtuvo %v", err)
 	}
 	// Listado aislado.
-	listA, _ := svc.List(ctx, a)
-	listB, _ := svc.List(ctx, b)
+	listA, _ := svc.List(ctx, a, nil, nil)
+	listB, _ := svc.List(ctx, b, nil, nil)
 	if len(listA) != 1 || len(listB) != 0 {
 		t.Fatalf("aislamiento listado: A=%d B=%d", len(listA), len(listB))
 	}

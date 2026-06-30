@@ -3,6 +3,7 @@ package sales
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -125,13 +126,24 @@ func (s *store) createSale(ctx context.Context, tenantID string, items []LineInp
 	return sale, nil
 }
 
-func (s *store) listByTenant(ctx context.Context, tenantID string) ([]Sale, error) {
-	rows, err := s.pool.Query(ctx,
-		`SELECT s.id::text, s.tenant_id::text, s.total_cents, s.amount_paid_cents, s.change_cents,
+// listByTenant lista ventas del negocio. Si se da rango [from, to) filtra por
+// fecha (para "ventas del día"); si no, devuelve las últimas 50.
+func (s *store) listByTenant(ctx context.Context, tenantID string, from, to *time.Time) ([]Sale, error) {
+	const base = `SELECT s.id::text, s.tenant_id::text, s.total_cents, s.amount_paid_cents, s.change_cents,
 		        s.payment_method, s.customer_id::text, (cu.first_name || ' ' || cu.last_name), s.created_at
 		   FROM sales s
-		   LEFT JOIN customers cu ON cu.id = s.customer_id
-		  WHERE s.tenant_id = $1 ORDER BY s.created_at DESC LIMIT 50`, tenantID)
+		   LEFT JOIN customers cu ON cu.id = s.customer_id `
+
+	var rows pgx.Rows
+	var err error
+	if from != nil && to != nil {
+		rows, err = s.pool.Query(ctx, base+
+			`WHERE s.tenant_id = $1 AND s.created_at >= $2 AND s.created_at < $3
+			 ORDER BY s.created_at DESC LIMIT 500`, tenantID, *from, *to)
+	} else {
+		rows, err = s.pool.Query(ctx, base+
+			`WHERE s.tenant_id = $1 ORDER BY s.created_at DESC LIMIT 50`, tenantID)
+	}
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -82,7 +83,9 @@ func (svc *Service) handleList(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	items, err := svc.List(r.Context(), tenantID)
+	from := parseTime(r.URL.Query().Get("from"))
+	to := parseTime(r.URL.Query().Get("to"))
+	items, err := svc.List(r.Context(), tenantID, from, to)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "internal", "No se pudieron listar las ventas")
 		return
@@ -91,6 +94,18 @@ func (svc *Service) handleList(w http.ResponseWriter, r *http.Request) {
 		items = []Sale{}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+// parseTime acepta una fecha RFC3339 (la que envía el frontend); inválida -> nil.
+func parseTime(s string) *time.Time {
+	if s == "" {
+		return nil
+	}
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return nil
+	}
+	return &t
 }
 
 func (svc *Service) handleGet(w http.ResponseWriter, r *http.Request) {
