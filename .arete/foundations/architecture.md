@@ -17,6 +17,26 @@ Aplicación web **multi-negocio (multi-tenant)** para administración de cafeter
 | Base de datos | PostgreSQL (Neon en prod) | Persistencia con aislamiento por negocio | backend-engineer |
 | Plataforma | Docker + GitHub Actions + Fly.io | Build, deploy, runtime | devops-engineer |
 
+## Estructura de repo y despliegue (decisión base — ver ADR-003)
+- **Monolito modular** en Go: un solo servicio con módulos internos (`auth`, `products`, `sales`, `loyalty`), **no microservicios**.
+- **Monorepo:** un único repo `faro` con `backend/` y `frontend/`, desplegados como dos imágenes Docker.
+
+```
+faro/
+├── backend/                 # Go (monolito modular)
+│   ├── cmd/api/             # entrypoint del servidor
+│   ├── internal/<modulo>/   # auth, products, sales, loyalty (límites estrictos)
+│   ├── migrations/
+│   └── Dockerfile
+├── frontend/                # Next.js (App Router, TS, Tailwind)
+│   └── Dockerfile
+├── docker-compose.yml       # local: backend + frontend + Postgres
+├── fly.backend.toml · fly.frontend.toml
+└── .arete/                  # specs del harness
+```
+> Cada módulo es un paquete interno con frontera clara, para poder extraer un microservicio en el futuro si hiciera falta. Reversible hacia servicios; no al revés.
+> **Plan futuro:** separar `frontend/` a su propio repo. Por eso `backend/` y `frontend/` se mantienen **desacoplados** (sin imports cruzados; acoplados solo por el contrato de API), para que el split sea barato y conserve historia.
+
 ## Multi-tenancy (decisión base — ver ADR-001)
 - **Modelo:** base de datos compartida, esquema compartido, columna **`tenant_id`** en las tablas con datos de negocio.
 - **Aislamiento:** la API acota **toda** consulta al `tenant_id` del usuario autenticado. El **super admin global** (`tenant_id` nulo, `is_super_admin`) puede operar sobre cualquier negocio de forma explícita.
