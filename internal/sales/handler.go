@@ -42,6 +42,7 @@ type createRequest struct {
 	Items           []lineRequest `json:"items"`
 	PaymentMethod   string        `json:"paymentMethod"` // cash | card
 	AmountPaidCents int           `json:"amountPaidCents"`
+	CustomerID      *string       `json:"customerId"`
 }
 
 func (svc *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
@@ -59,10 +60,12 @@ func (svc *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		items = append(items, LineInput{ProductID: it.ProductID, Quantity: it.Quantity})
 	}
 
-	sale, err := svc.Create(r.Context(), tenantID, items, req.PaymentMethod, req.AmountPaidCents)
+	sale, err := svc.Create(r.Context(), tenantID, items, req.PaymentMethod, req.AmountPaidCents, req.CustomerID)
 	switch {
 	case errors.Is(err, ErrValidation):
 		writeError(w, http.StatusBadRequest, "validation_error", "Venta inválida (items y cantidades > 0)")
+	case errors.Is(err, ErrInvalidCustomer):
+		writeError(w, http.StatusBadRequest, "invalid_customer", "El cliente no es válido")
 	case errors.Is(err, ErrInvalidProduct):
 		writeError(w, http.StatusBadRequest, "invalid_product", "Algún producto no es válido o está inactivo")
 	case errors.Is(err, ErrInsufficientPayment):

@@ -12,7 +12,7 @@ import (
 
 func TestCreateRequiresName(t *testing.T) {
 	svc := NewService(nil) // el store no se usa cuando la validación falla
-	if _, err := svc.Create(context.Background(), "t1", "   ", 0); err != ErrValidation {
+	if _, err := svc.Create(context.Background(), "t1", "   ", 0, nil); err != ErrValidation {
 		t.Fatalf("nombre vacío: esperaba ErrValidation, obtuvo %v", err)
 	}
 }
@@ -60,10 +60,10 @@ func TestCreateListAndIsolation(t *testing.T) {
 	defer pool.Close()
 	ctx := context.Background()
 
-	if _, err := svc.Create(ctx, a, "Bebidas calientes", 1); err != nil {
+	if _, err := svc.Create(ctx, a, "Bebidas calientes", 1, nil); err != nil {
 		t.Fatalf("crear: %v", err)
 	}
-	if _, err := svc.Create(ctx, a, "Panadería", 0); err != nil {
+	if _, err := svc.Create(ctx, a, "Panadería", 0, nil); err != nil {
 		t.Fatalf("crear: %v", err)
 	}
 
@@ -87,10 +87,10 @@ func TestDuplicateNamePerTenant(t *testing.T) {
 	svc, pool, a, _ := testSvc(t)
 	defer pool.Close()
 	ctx := context.Background()
-	if _, err := svc.Create(ctx, a, "Café", 0); err != nil {
+	if _, err := svc.Create(ctx, a, "Café", 0, nil); err != nil {
 		t.Fatalf("crear: %v", err)
 	}
-	if _, err := svc.Create(ctx, a, "Café", 0); err != ErrNameTaken {
+	if _, err := svc.Create(ctx, a, "Café", 0, nil); err != ErrNameTaken {
 		t.Fatalf("duplicado: esperaba ErrNameTaken, obtuvo %v", err)
 	}
 }
@@ -100,7 +100,7 @@ func TestUpdateDeactivateAndCrossTenant(t *testing.T) {
 	defer pool.Close()
 	ctx := context.Background()
 
-	c, err := svc.Create(ctx, a, "Postres", 0)
+	c, err := svc.Create(ctx, a, "Postres", 0, nil)
 	if err != nil {
 		t.Fatalf("crear: %v", err)
 	}

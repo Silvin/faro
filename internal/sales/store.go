@@ -14,6 +14,7 @@ var (
 	ErrNotFound            = errors.New("not found")
 	ErrInvalidProduct      = errors.New("invalid product")
 	ErrInsufficientPayment = errors.New("insufficient payment")
+	ErrInvalidCustomer     = errors.New("invalid customer")
 )
 
 type store struct {
@@ -34,12 +35,29 @@ type computedLine struct {
 
 // createSale registra la venta en una transacción. El total se calcula con los
 // precios de los productos del negocio (no se confía en el cliente).
-func (s *store) createSale(ctx context.Context, tenantID string, items []LineInput, paymentMethod string, amountPaidCents int) (Sale, error) {
+func (s *store) createSale(ctx context.Context, tenantID string, items []LineInput, paymentMethod string, amountPaidCents int, customerID *string) (Sale, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return Sale{}, err
 	}
 	defer tx.Rollback(ctx)
+
+	// Validar el cliente (si se asocia) y tomar su nombre para el ticket.
+	var customerName *string
+	if customerID != nil {
+		var fn, ln string
+		err := tx.QueryRow(ctx,
+			`SELECT first_name, last_name FROM customers WHERE id = $1 AND tenant_id = $2`,
+			*customerID, tenantID).Scan(&fn, &ln)
+		switch {
+		case errors.Is(err, pgx.ErrNoRows), dberr.IsInvalidText(err):
+			return Sale{}, ErrInvalidCustomer
+		case err != nil:
+			return Sale{}, err
+		}
+		full := fn + " " + ln
+		customerName = &full
+	}
 
 	var lines []computedLine
 	total := 0
@@ -79,13 +97,14 @@ func (s *store) createSale(ctx context.Context, tenantID string, items []LineInp
 
 	var sale Sale
 	if err := tx.QueryRow(ctx,
-		`INSERT INTO sales (tenant_id, total_cents, amount_paid_cents, change_cents, payment_method)
-		 VALUES ($1, $2, $3, $4, $5)
-		 RETURNING id::text, tenant_id::text, total_cents, amount_paid_cents, change_cents, payment_method, created_at`,
-		tenantID, total, amountPaid, change, paymentMethod).
-		Scan(&sale.ID, &sale.TenantID, &sale.TotalCents, &sale.AmountPaidCents, &sale.ChangeCents, &sale.PaymentMethod, &sale.CreatedAt); err != nil {
+		`INSERT INTO sales (tenant_id, total_cents, amount_paid_cents, change_cents, payment_method, customer_id)
+		 VALUES ($1, $2, $3, $4, $5, $6)
+		 RETURNING id::text, tenant_id::text, total_cents, amount_paid_cents, change_cents, payment_method, customer_id::text, created_at`,
+		tenantID, total, amountPaid, change, paymentMethod, customerID).
+		Scan(&sale.ID, &sale.TenantID, &sale.TotalCents, &sale.AmountPaidCents, &sale.ChangeCents, &sale.PaymentMethod, &sale.CustomerID, &sale.CreatedAt); err != nil {
 		return Sale{}, err
 	}
+	sale.CustomerName = customerName
 
 	for _, l := range lines {
 		var item SaleItem
@@ -108,8 +127,11 @@ func (s *store) createSale(ctx context.Context, tenantID string, items []LineInp
 
 func (s *store) listByTenant(ctx context.Context, tenantID string) ([]Sale, error) {
 	rows, err := s.pool.Query(ctx,
-		`SELECT id::text, tenant_id::text, total_cents, amount_paid_cents, change_cents, payment_method, created_at
-		   FROM sales WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT 50`, tenantID)
+		`SELECT s.id::text, s.tenant_id::text, s.total_cents, s.amount_paid_cents, s.change_cents,
+		        s.payment_method, s.customer_id::text, (cu.first_name || ' ' || cu.last_name), s.created_at
+		   FROM sales s
+		   LEFT JOIN customers cu ON cu.id = s.customer_id
+		  WHERE s.tenant_id = $1 ORDER BY s.created_at DESC LIMIT 50`, tenantID)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +140,7 @@ func (s *store) listByTenant(ctx context.Context, tenantID string) ([]Sale, erro
 	var out []Sale
 	for rows.Next() {
 		var sale Sale
-		if err := rows.Scan(&sale.ID, &sale.TenantID, &sale.TotalCents, &sale.AmountPaidCents, &sale.ChangeCents, &sale.PaymentMethod, &sale.CreatedAt); err != nil {
+		if err := rows.Scan(&sale.ID, &sale.TenantID, &sale.TotalCents, &sale.AmountPaidCents, &sale.ChangeCents, &sale.PaymentMethod, &sale.CustomerID, &sale.CustomerName, &sale.CreatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, sale)
@@ -129,9 +151,12 @@ func (s *store) listByTenant(ctx context.Context, tenantID string) ([]Sale, erro
 func (s *store) get(ctx context.Context, tenantID, id string) (Sale, error) {
 	var sale Sale
 	err := s.pool.QueryRow(ctx,
-		`SELECT id::text, tenant_id::text, total_cents, amount_paid_cents, change_cents, payment_method, created_at
-		   FROM sales WHERE id = $1 AND tenant_id = $2`, id, tenantID).
-		Scan(&sale.ID, &sale.TenantID, &sale.TotalCents, &sale.AmountPaidCents, &sale.ChangeCents, &sale.PaymentMethod, &sale.CreatedAt)
+		`SELECT s.id::text, s.tenant_id::text, s.total_cents, s.amount_paid_cents, s.change_cents,
+		        s.payment_method, s.customer_id::text, (cu.first_name || ' ' || cu.last_name), s.created_at
+		   FROM sales s
+		   LEFT JOIN customers cu ON cu.id = s.customer_id
+		  WHERE s.id = $1 AND s.tenant_id = $2`, id, tenantID).
+		Scan(&sale.ID, &sale.TenantID, &sale.TotalCents, &sale.AmountPaidCents, &sale.ChangeCents, &sale.PaymentMethod, &sale.CustomerID, &sale.CustomerName, &sale.CreatedAt)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows), dberr.IsInvalidText(err):
 		return Sale{}, ErrNotFound

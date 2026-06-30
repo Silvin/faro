@@ -14,6 +14,7 @@ import (
 	"faro/internal/auth"
 	"faro/internal/categories"
 	"faro/internal/config"
+	"faro/internal/customers"
 	"faro/internal/db"
 	"faro/internal/products"
 	"faro/internal/sales"
@@ -51,6 +52,7 @@ func main() {
 	catSvc := categories.NewService(pool)
 	prodSvc := products.NewService(pool)
 	salesSvc := sales.NewService(pool)
+	custSvc := customers.NewService(pool)
 
 	if err := os.MkdirAll(cfg.UploadDir, 0o755); err != nil {
 		log.Fatalf("crear directorio de uploads: %v", err)
@@ -59,7 +61,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
-		Handler:           server.New(pool, cfg.CORSOrigin, authSvc, catSvc, prodSvc, salesSvc, uploadsH, cfg.UploadDir),
+		Handler:           server.New(pool, cfg.CORSOrigin, authSvc, catSvc, prodSvc, salesSvc, custSvc, uploadsH, cfg.UploadDir),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

@@ -12,6 +12,7 @@ import (
 
 	"faro/internal/auth"
 	"faro/internal/categories"
+	"faro/internal/customers"
 	"faro/internal/products"
 	"faro/internal/sales"
 	"faro/internal/uploads"
@@ -20,7 +21,7 @@ import (
 // New construye el handler HTTP raíz. Los módulos (auth, products, …) montarán
 // aquí sus sub-routers en incrementos siguientes. corsOrigin es el origen del
 // frontend (faro-ui) autorizado a consumir la API con credenciales.
-func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service, catSvc *categories.Service, prodSvc *products.Service, salesSvc *sales.Service, uploadsH *uploads.Handler, uploadDir string) http.Handler {
+func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service, catSvc *categories.Service, prodSvc *products.Service, salesSvc *sales.Service, custSvc *customers.Service, uploadsH *uploads.Handler, uploadDir string) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
@@ -61,6 +62,8 @@ func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service, catSvc *c
 	r.Mount("/products", prodSvc.Routes(authSvc.RequireSession))
 	// Módulo POS (M4): ventas, total calculado en servidor.
 	r.Mount("/sales", salesSvc.Routes(authSvc.RequireSession))
+	// Clientes (lealtad): alta y búsqueda por teléfono.
+	r.Mount("/customers", custSvc.Routes(authSvc.RequireSession))
 	// Subida de imágenes (POST, con sesión) y servir archivos estáticos (público).
 	r.Mount("/uploads", uploadsH.Routes())
 	r.Handle("/files/*", http.StripPrefix("/files/", http.FileServer(http.Dir(uploadDir))))

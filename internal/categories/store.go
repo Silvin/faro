@@ -27,23 +27,38 @@ func pgCode(err error, code string) bool {
 	return errors.As(err, &pgErr) && pgErr.Code == code
 }
 
-func (s *store) create(ctx context.Context, tenantID, name string, sortOrder int) (Category, error) {
+func (s *store) create(ctx context.Context, tenantID, name string, sortOrder int, imageURL *string) (Category, error) {
 	var c Category
 	err := s.pool.QueryRow(ctx,
-		`INSERT INTO categories (tenant_id, name, sort_order)
-		 VALUES ($1, $2, $3)
-		 RETURNING id::text, tenant_id::text, name, status, sort_order, created_at`,
-		tenantID, name, sortOrder).
-		Scan(&c.ID, &c.TenantID, &c.Name, &c.Status, &c.SortOrder, &c.CreatedAt)
+		`INSERT INTO categories (tenant_id, name, sort_order, image_url)
+		 VALUES ($1, $2, $3, $4)
+		 RETURNING id::text, tenant_id::text, name, status, sort_order, image_url, created_at`,
+		tenantID, name, sortOrder, imageURL).
+		Scan(&c.ID, &c.TenantID, &c.Name, &c.Status, &c.SortOrder, &c.ImageURL, &c.CreatedAt)
 	if pgCode(err, "23505") {
 		return Category{}, ErrNameTaken
 	}
 	return c, err
 }
 
+func (s *store) get(ctx context.Context, tenantID, id string) (Category, error) {
+	var c Category
+	err := s.pool.QueryRow(ctx,
+		`SELECT id::text, tenant_id::text, name, status, sort_order, image_url, created_at
+		   FROM categories WHERE id = $1 AND tenant_id = $2`, id, tenantID).
+		Scan(&c.ID, &c.TenantID, &c.Name, &c.Status, &c.SortOrder, &c.ImageURL, &c.CreatedAt)
+	switch {
+	case errors.Is(err, pgx.ErrNoRows), pgCode(err, "22P02"):
+		return Category{}, ErrNotFound
+	case err != nil:
+		return Category{}, err
+	}
+	return c, nil
+}
+
 func (s *store) listByTenant(ctx context.Context, tenantID string) ([]Category, error) {
 	rows, err := s.pool.Query(ctx,
-		`SELECT id::text, tenant_id::text, name, status, sort_order, created_at
+		`SELECT id::text, tenant_id::text, name, status, sort_order, image_url, created_at
 		   FROM categories WHERE tenant_id = $1 ORDER BY sort_order, name`, tenantID)
 	if err != nil {
 		return nil, err
@@ -53,7 +68,7 @@ func (s *store) listByTenant(ctx context.Context, tenantID string) ([]Category, 
 	var out []Category
 	for rows.Next() {
 		var c Category
-		if err := rows.Scan(&c.ID, &c.TenantID, &c.Name, &c.Status, &c.SortOrder, &c.CreatedAt); err != nil {
+		if err := rows.Scan(&c.ID, &c.TenantID, &c.Name, &c.Status, &c.SortOrder, &c.ImageURL, &c.CreatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, c)
@@ -63,17 +78,18 @@ func (s *store) listByTenant(ctx context.Context, tenantID string) ([]Category, 
 
 // update aplica cambios parciales SOLO si la categoría pertenece al tenant
 // (WHERE id AND tenant_id). Si no coincide -> ErrNotFound (aísla entre negocios).
-func (s *store) update(ctx context.Context, tenantID, id string, name, status *string, sortOrder *int) (Category, error) {
+func (s *store) update(ctx context.Context, tenantID, id string, name, status *string, sortOrder *int, imageURL *string) (Category, error) {
 	var c Category
 	err := s.pool.QueryRow(ctx,
 		`UPDATE categories
 		    SET name       = COALESCE($3, name),
 		        status     = COALESCE($4, status),
-		        sort_order = COALESCE($5, sort_order)
+		        sort_order = COALESCE($5, sort_order),
+		        image_url  = COALESCE($6, image_url)
 		  WHERE id = $1 AND tenant_id = $2
-		  RETURNING id::text, tenant_id::text, name, status, sort_order, created_at`,
-		id, tenantID, name, status, sortOrder).
-		Scan(&c.ID, &c.TenantID, &c.Name, &c.Status, &c.SortOrder, &c.CreatedAt)
+		  RETURNING id::text, tenant_id::text, name, status, sort_order, image_url, created_at`,
+		id, tenantID, name, status, sortOrder, imageURL).
+		Scan(&c.ID, &c.TenantID, &c.Name, &c.Status, &c.SortOrder, &c.ImageURL, &c.CreatedAt)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
 		return Category{}, ErrNotFound

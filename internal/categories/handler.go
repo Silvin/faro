@@ -17,6 +17,7 @@ func (svc *Service) Routes(requireSession func(http.Handler) http.Handler) http.
 	r.Use(requireSession)
 	r.Post("/", svc.handleCreate)
 	r.Get("/", svc.handleList)
+	r.Get("/{id}", svc.handleGet)
 	r.Patch("/{id}", svc.handleUpdate)
 	return r
 }
@@ -37,8 +38,9 @@ func tenantOf(w http.ResponseWriter, r *http.Request) (string, bool) {
 }
 
 type createRequest struct {
-	Name      string `json:"name"`
-	SortOrder int    `json:"sortOrder"`
+	Name      string  `json:"name"`
+	SortOrder int     `json:"sortOrder"`
+	ImageURL  *string `json:"imageUrl"`
 }
 
 func (svc *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +53,7 @@ func (svc *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "validation_error", "Cuerpo inválido")
 		return
 	}
-	c, err := svc.Create(r.Context(), tenantID, req.Name, req.SortOrder)
+	c, err := svc.Create(r.Context(), tenantID, req.Name, req.SortOrder, req.ImageURL)
 	switch {
 	case errors.Is(err, ErrValidation):
 		writeError(w, http.StatusBadRequest, "validation_error", "El nombre es requerido")
@@ -84,6 +86,23 @@ type updateRequest struct {
 	Name      *string `json:"name"`
 	Status    *string `json:"status"`
 	SortOrder *int    `json:"sortOrder"`
+	ImageURL  *string `json:"imageUrl"`
+}
+
+func (svc *Service) handleGet(w http.ResponseWriter, r *http.Request) {
+	tenantID, ok := tenantOf(w, r)
+	if !ok {
+		return
+	}
+	c, err := svc.Get(r.Context(), tenantID, chi.URLParam(r, "id"))
+	switch {
+	case errors.Is(err, ErrNotFound):
+		writeError(w, http.StatusNotFound, "not_found", "Categoría no encontrada")
+	case err != nil:
+		writeError(w, http.StatusInternalServerError, "internal", "No se pudo obtener la categoría")
+	default:
+		writeJSON(w, http.StatusOK, map[string]any{"category": c})
+	}
 }
 
 func (svc *Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +116,7 @@ func (svc *Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "validation_error", "Cuerpo inválido")
 		return
 	}
-	c, err := svc.Update(r.Context(), tenantID, id, UpdateInput{Name: req.Name, Status: req.Status, SortOrder: req.SortOrder})
+	c, err := svc.Update(r.Context(), tenantID, id, UpdateInput{Name: req.Name, Status: req.Status, SortOrder: req.SortOrder, ImageURL: req.ImageURL})
 	switch {
 	case errors.Is(err, ErrValidation):
 		writeError(w, http.StatusBadRequest, "validation_error", "Datos inválidos")

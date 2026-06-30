@@ -11,5 +11,6 @@ type Category struct {
 	Name      string    `json:"name"`
 	Status    string    `json:"status"`
 	SortOrder int       `json:"sortOrder"`
+	ImageURL  *string   `json:"imageUrl"`
 	CreatedAt time.Time `json:"createdAt"`
 }

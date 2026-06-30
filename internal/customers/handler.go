@@ -1,0 +1,80 @@
+package customers
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+
+	"faro/internal/auth"
+)
+
+// Routes se monta en /customers. Requiere sesión.
+func (svc *Service) Routes(requireSession func(http.Handler) http.Handler) http.Handler {
+	r := chi.NewRouter()
+	r.Use(requireSession)
+	r.Post("/", svc.handleCreate)
+	r.Get("/", svc.handleSearch) // ?phone=...
+	return r
+}
+
+func tenantOf(w http.ResponseWriter, r *http.Request) (string, bool) {
+	u, ok := auth.UserFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized", "No autenticado")
+		return "", false
+	}
+	if u.TenantID == nil {
+		writeError(w, http.StatusBadRequest, "tenant_required", "Esta operación requiere un negocio")
+		return "", false
+	}
+	return *u.TenantID, true
+}
+
+type createRequest struct {
+	Phone     string `json:"phone"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+}
+
+func (svc *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
+	tenantID, ok := tenantOf(w, r)
+	if !ok {
+		return
+	}
+	var req createRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "validation_error", "Cuerpo inválido")
+		return
+	}
+	c, err := svc.Create(r.Context(), tenantID, req.Phone, req.FirstName, req.LastName)
+	switch {
+	case errors.Is(err, ErrValidation):
+		writeError(w, http.StatusBadRequest, "validation_error", "Teléfono, nombre y apellido son requeridos")
+	case errors.Is(err, ErrPhoneTaken):
+		writeError(w, http.StatusConflict, "phone_taken", "Ya existe un cliente con ese teléfono")
+	case err != nil:
+		writeError(w, http.StatusInternalServerError, "internal", "No se pudo registrar el cliente")
+	default:
+		writeJSON(w, http.StatusCreated, map[string]any{"customer": c})
+	}
+}
+
+func (svc *Service) handleSearch(w http.ResponseWriter, r *http.Request) {
+	tenantID, ok := tenantOf(w, r)
+	if !ok {
+		return
+	}
+	c, err := svc.FindByPhone(r.Context(), tenantID, r.URL.Query().Get("phone"))
+	switch {
+	case errors.Is(err, ErrValidation):
+		writeError(w, http.StatusBadRequest, "validation_error", "Indica un teléfono")
+	case errors.Is(err, ErrNotFound):
+		writeError(w, http.StatusNotFound, "not_found", "Cliente no encontrado")
+	case err != nil:
+		writeError(w, http.StatusInternalServerError, "internal", "No se pudo buscar el cliente")
+	default:
+		writeJSON(w, http.StatusOK, map[string]any{"customer": c})
+	}
+}
