@@ -25,7 +25,7 @@ _Estados de gate: ⬜ pendiente · 🟡 en curso · ✅ cumplido · 🔴 bloquea
 
 ## Aportes a foundations
 - `architecture.md` (base + multi-tenancy + auth) — NACIÓ con este módulo.
-- `design-system.md` v0.2 (tokens + Button/Input/Form/Card + **app shell con menú lateral** estilo BrightPOS) — NACIÓ.
+- `design-system.md` v0.3 (paleta **lime BrightPOS** + Inter/Poppins + app shell top bar/sidebar agrupado + componentes) — NACIÓ.
 - `adr/ADR-001-multi-tenancy.md`, `adr/ADR-002-auth-sesion.md`.
 
 ## Siguiente

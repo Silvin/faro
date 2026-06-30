@@ -1,57 +1,60 @@
 # Design System — Faro
-_Versión: 0.2 · Fecha: 2026-06-29 · Nace con: módulo login (M1) · Crece con cada módulo_
+_Versión: 0.3 · Fecha: 2026-06-29 · Nace con: módulo login (M1) · Crece con cada módulo_
 
-> **Referencia visual:** dashboard POS con **menú lateral izquierdo**, inspirado en _BrightPOS — Point of Sale Dashboard UI_ (Dribbble shot 27026796). Los **colores y la tipografía exactos** están **pendientes de ajustar a la referencia** (ver nota al final).
+> **Referencia visual:** _BrightPOS — Point of Sale Dashboard UI_ (Dribbble shot 27026796).
+> Identidad: **acento lime/verde-limón** sobre **fondo claro**, sidebar **blanco** con navegación agrupada, ítem activo como **pastilla lime con texto oscuro**, tipografía sans limpia. Estética luminosa y amigable, pensada para mostrador.
 >
-> Base mínima para arrancar. Se **extiende** módulo a módulo (no se rehace).
+> Valores de color aproximados a partir de la imagen de referencia; afinar con el archivo original si se requiere precisión exacta.
 
 ## Tokens
 ### Color
-- `--color-primary`: café/ámbar (marca cafetería) — ej. `#6F4E37`
-- `--color-primary-contrast`: `#FFFFFF`
-- `--color-bg`: `#FAFAF8` · `--color-surface`: `#FFFFFF`
-- `--color-text`: `#1F1B16` · `--color-text-muted`: `#6B6259`
-- `--color-border`: `#E7E2DA`
+- `--color-accent` (lime, **primario/acción**): `#C4E456`
+- `--color-accent-strong` (hover/activo): `#B2D63F`
+- `--color-on-accent` (texto/iconos sobre lime): `#1A1A1A`  ← **texto oscuro sobre el lime, no blanco**
+- `--color-bg` (fondo de página): `#F4F4F2`
+- `--color-surface` (sidebar, cards, top bar): `#FFFFFF`
+- `--color-text`: `#1A1A1A` · `--color-text-muted`: `#8C8C8C`
+- `--color-border`: `#E6E6E4`
 - `--color-danger`: `#C0392B` · `--color-success`: `#2E7D32`
-- _Acento/primario y colores del **sidebar**: a ajustar a la paleta de la referencia (BrightPOS)._
 
 ### Tipografía
-- Familia: **sans moderna** (propuesta: Poppins o Inter) — _a confirmar con la fuente de la referencia_. Escala: `12 · 14 · 16 · 20 · 24 · 32`.
-- Pesos: regular 400, medium 500, semibold 600.
+- Familia base UI: **Inter** (excelente para precios/números del POS).
+- Marca/encabezados pueden usar una sans redondeada (**Poppins**) para el toque amigable de la referencia.
+- Escala (px): `12 · 14 · 16 · 20 · 24 · 32`. Pesos: 400 / 500 / 600 (logo en 700).
 
 ### Espaciado / radios / sombras
 - Espaciado (px): `4 · 8 · 12 · 16 · 24 · 32`.
-- Radios: `sm 6 · md 10 · lg 16`. Sombra: `sm` sutil para tarjetas/inputs en foco.
+- Radios: `sm 8 · md 12 · lg 16` (la referencia usa esquinas bien redondeadas en pastillas y cards).
+- Sombra: `sm` muy sutil en cards; el layout se apoya más en bordes claros que en sombras.
 
 ## Accesibilidad (reglas base)
-- Contraste mínimo **AA**. Foco visible en todos los controles.
-- Áreas táctiles ≥ 44×44 px (pensado para tablet de mostrador).
+- Contraste mínimo **AA**. ⚠️ El lime es claro: **texto sobre lime siempre oscuro** (`--color-on-accent`), nunca blanco.
+- Foco visible en todos los controles. Áreas táctiles ≥ 44×44 px (tablet de mostrador).
 - Inputs siempre con `<label>` asociado.
 
-## Layout — App shell con menú lateral (cimiento)
-- **Sidebar izquierdo** fijo: logo Faro arriba · ítems de navegación (icono + label, ítem **activo resaltado**) · al fondo, usuario actual + **Logout**. Colapsable en pantallas chicas.
-- **Área de contenido** a la derecha, con header de página. Este shell lo reusan TODOS los módulos (POS, productos, reportes…).
-- Estilo de menú/colores/tipografía: según la referencia BrightPOS (pendiente de ajuste fino).
+## Layout — App shell (cimiento, estilo BrightPOS)
+- **Top bar** (blanco): logo **Faro** (izq) + acciones globales (búsqueda, notificaciones, menú "…").
+- **Sidebar izquierdo** (blanco, fijo): navegación **agrupada por secciones** con encabezados en gris muted (ej. "Main Menu", "Support"). Cada ítem = icono outline + label. **Ítem activo = pastilla lime (`--color-accent`) con texto oscuro y radio `lg`.**
+- **Área de contenido**: breadcrumb (ej. "Dashboard › New Transaction") + título de página + acciones a la derecha (ej. botón "Back" con borde y icono lime).
+- Responsive: sidebar colapsable en pantallas chicas. Este shell lo reusan TODOS los módulos.
 
 ## Componentes (los que usa login)
-### Button — estados: default / hover / active / disabled / loading
-- Variantes: `primary` (acción principal), `ghost` (secundaria).
+### Button — variantes y estados
+- `primary`: **fondo lime + texto oscuro**; hover → `accent-strong`. Estados: default / hover / active / disabled / loading.
+- `outline`: fondo blanco, borde claro, **icono/acento lime** (como "Back"/"Notification" de la referencia).
+- `ghost`: sin fondo, para acciones secundarias (ej. "Salir").
 ### Input (text / email / password) — estados: default / focus / error / disabled
-- Con label, mensaje de error y, en password, toggle de visibilidad.
+- Con label, mensaje de error; password con toggle de visibilidad.
 ### Form field — label + input + texto de error.
-### Card / Surface — contenedor con borde y radio `md`.
-### Sidebar nav item — estados: default / hover / **activo** / disabled (icono + label).
-### Toast / Inline error — feedback de error genérico (ej. credenciales inválidas).
+### Card / Surface — blanco, borde claro, radio `md`.
+### Sidebar nav item — estados: default / hover / **activo (pastilla lime, texto oscuro)** / disabled.
+### Section header (sidebar) — texto muted, mayúscula/espaciado, separa grupos ("Main Menu", "Support").
 
 ## Patrones
-- **Formulario:** label arriba, error debajo del campo, acción principal a ancho completo en móvil/tablet.
-- **Feedback:** errores de servidor como inline/toast; nunca revelar detalles sensibles.
+- **Acción principal = lime con texto oscuro.** Acentos (activos, "+", chips seleccionados) en lime.
+- **Formulario:** label arriba, error debajo, acción principal a ancho completo en móvil/tablet.
+- **Feedback:** errores como inline/toast; mensajes genéricos en credenciales.
 
 ## Versionado
-- Estable: tokens base, Button, Input, Form field, Card, **App shell (sidebar)**, Sidebar nav item.
-- Pendiente de ajuste a la referencia: paleta de acento/sidebar y tipografía exacta.
-
-## Nota — cómo fijar colores y tipografía exactos de la referencia
-No pude leer la imagen de Dribbble (se carga por JS). Para clavar los valores exactos, comparte una de estas:
-- Los **hex** de los colores + el **nombre de la fuente**, o
-- Una **captura** del shot guardada en un archivo (ej. `/Users/silvio/Projects/faro/ref-brightpos.png`) y la **leo** para extraer la paleta.
+- Estable: paleta BrightPOS (lime), tipografía (Inter/Poppins), tokens, Button (primary/outline/ghost), Input, Form field, Card, App shell (top bar + sidebar agrupado), Sidebar nav item, Section header.
+- Próximas extensiones (otros módulos): chips de categoría (estilo tabs lime), stepper de cantidad ("− n +" con + lime), grid de cards de producto, breadcrumb.

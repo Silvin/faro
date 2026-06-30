@@ -28,10 +28,11 @@ Provisión: Super admin → "Crear negocio"   |   Admin → "Crear usuario"
 - Campos: Nombre · Email · Password.
 - Estados: vacío / carga / error (email ya existe) / éxito (usuario creado).
 
-### P0 — App shell (base) · Objetivo: layout autenticado con **menú lateral**
-- Bloques: **sidebar izquierdo** (logo Faro arriba, navegación con icono+label e ítem activo resaltado, al fondo usuario actual + **Logout**) + **área de contenido** a la derecha con header de página.
-- Estilo: inspirado en la referencia **BrightPOS** (menú lateral; colores y tipografía a confirmar).
-- Responsive: sidebar colapsable en pantallas chicas (tablet de mostrador / escritorio).
+### P0 — App shell (base) · Objetivo: layout autenticado estilo **BrightPOS**
+- **Top bar** (blanca): logo **Faro** (izq) + acciones globales (búsqueda, notificaciones).
+- **Sidebar izquierdo** (blanca): navegación **agrupada por secciones** (encabezados muted), ítems icono+label, **ítem activo = pastilla lime con texto oscuro**; al fondo usuario actual + **Logout**.
+- **Área de contenido**: breadcrumb + título de página + acciones a la derecha.
+- Acento **lime (#C4E456)** en activos y acción principal (texto oscuro sobre lime). Responsive: sidebar colapsable.
 - Este shell es **cimiento**: lo reusan todos los módulos siguientes.
 
 ## Notas
