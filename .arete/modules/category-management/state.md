@@ -16,6 +16,11 @@ _Actualizado: 2026-06-30_
 | 7 | Review | code-reviewer | approve | ✅ **approve** — `reviews/review.md` |
 | 8 | Deploy | devops-engineer | desplegado + observable | ⬜ |
 
+## Ajustes (2026-06-30) — validados E2E
+- **Imagen de categoría** (migración 0007: `categories.image_url`) con placeholder de **iniciales** (3 letras) cuando no hay foto.
+- Pantallas separadas: `/categories` (listado), `/categories/new`, `/categories/[id]/edit` + `GET /categories/{id}`.
+- En el POS, categorías con imagen arriba y nombre abajo (truncado).
+
 ## Reutiliza de foundations
 - Auth + `RequireSession` + tenant-scope (de login).
 - `design-system.md` (BrightPOS) y app shell.

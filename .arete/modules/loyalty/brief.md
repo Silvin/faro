@@ -14,6 +14,11 @@ El personal da de alta a un cliente por su número telefónico, le genera una ta
 ## Reutiliza de foundations
 - Ventas/POS (M4) para acumular puntos, design-system, arquitectura/auth.
 
+## Avance (2026-06-30) — puerta de entrada implementada
+- ✅ Tabla `customers` (migración 0008) + módulo `internal/customers` (alta y búsqueda por teléfono, acotado por negocio).
+- ✅ `sales.customer_id`: la venta se puede **asociar a un cliente** desde el POS (buscar por teléfono o registrar nombre/apellido). El cliente sale en el ticket.
+- ⬜ Pendiente del módulo completo: puntos/acumulación, tarjeta QR wallet (iOS/Android), envío por WhatsApp, redención.
+
 ## Notas / dependencias (⚠️ externas, con lead time)
 - **Apple Wallet:** requiere cuenta Apple Developer + certificados (PassKit).
 - **Google Wallet:** requiere alta en Google Wallet API.
