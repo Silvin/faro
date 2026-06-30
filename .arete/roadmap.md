@@ -7,7 +7,7 @@ Sistematizar los procesos clave de una cafetería (productos, ventas, reportes, 
 ## Módulos
 | #  | Módulo (slug)         | Descripción                                                                 | Estado     | Orden | Depende de |
 |----|-----------------------|-----------------------------------------------------------------------------|------------|-------|------------|
-| M1 | login                 | Autenticación de usuarios (sin roles en v1)                                  | 🟢 ready   | 1     | —          |
+| M1 | login                 | Autenticación de usuarios (sin roles en v1)                                  | 🟢 ready (Fase A ✅) | 1 | —      |
 | M2 | category-management   | CRUD de categorías de producto                                              | 💡 idea    | 2     | M1         |
 | M3 | product-management    | CRUD de productos (precio, categoría, estado)                               | 💡 idea    | 3     | M2         |
 | M4 | pos                   | Comanda/venta, agregar productos, cobro con cálculo de cambio, ticket       | 💡 idea    | 4     | M3         |
