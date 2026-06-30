@@ -17,6 +17,7 @@ func (svc *Service) Routes(requireSession func(http.Handler) http.Handler) http.
 	r.Use(requireSession)
 	r.Post("/", svc.handleCreate)
 	r.Get("/", svc.handleList)
+	r.Get("/{id}", svc.handleGet)
 	r.Patch("/{id}", svc.handleUpdate)
 	return r
 }
@@ -38,6 +39,7 @@ type createRequest struct {
 	Name       string  `json:"name"`
 	PriceCents int     `json:"priceCents"`
 	CategoryID *string `json:"categoryId"`
+	ImageURL   *string `json:"imageUrl"`
 }
 
 func (svc *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +52,7 @@ func (svc *Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "validation_error", "Cuerpo inválido")
 		return
 	}
-	p, err := svc.Create(r.Context(), tenantID, CreateInput{Name: req.Name, PriceCents: req.PriceCents, CategoryID: req.CategoryID})
+	p, err := svc.Create(r.Context(), tenantID, CreateInput{Name: req.Name, PriceCents: req.PriceCents, CategoryID: req.CategoryID, ImageURL: req.ImageURL})
 	writeResult(w, p, err, http.StatusCreated)
 }
 
@@ -70,11 +72,28 @@ func (svc *Service) handleList(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
+func (svc *Service) handleGet(w http.ResponseWriter, r *http.Request) {
+	tenantID, ok := tenantOf(w, r)
+	if !ok {
+		return
+	}
+	p, err := svc.Get(r.Context(), tenantID, chi.URLParam(r, "id"))
+	switch {
+	case errors.Is(err, ErrNotFound):
+		writeError(w, http.StatusNotFound, "not_found", "Producto no encontrado")
+	case err != nil:
+		writeError(w, http.StatusInternalServerError, "internal", "No se pudo obtener el producto")
+	default:
+		writeJSON(w, http.StatusOK, map[string]any{"product": p})
+	}
+}
+
 type updateRequest struct {
 	Name       *string `json:"name"`
 	PriceCents *int    `json:"priceCents"`
 	CategoryID *string `json:"categoryId"`
 	Status     *string `json:"status"`
+	ImageURL   *string `json:"imageUrl"`
 }
 
 func (svc *Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +107,7 @@ func (svc *Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p, err := svc.Update(r.Context(), tenantID, chi.URLParam(r, "id"), UpdateInput{
-		Name: req.Name, PriceCents: req.PriceCents, CategoryID: req.CategoryID, Status: req.Status,
+		Name: req.Name, PriceCents: req.PriceCents, CategoryID: req.CategoryID, Status: req.Status, ImageURL: req.ImageURL,
 	})
 	writeResult(w, p, err, http.StatusOK)
 }

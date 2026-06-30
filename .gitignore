@@ -4,6 +4,9 @@
 /bin/
 /out/
 
+# Imágenes subidas (almacenamiento local de dev)
+/uploads/
+
 # Entorno y secretos (¡nunca subir!)
 .env
 .env.*

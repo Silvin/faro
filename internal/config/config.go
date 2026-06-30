@@ -16,6 +16,7 @@ type Config struct {
 	CookieSecure       bool   // true en prod (HTTPS); false en dev local (HTTP)
 	SuperAdminEmail    string // seed del super admin global
 	SuperAdminPassword string
+	UploadDir          string // directorio local para imágenes subidas
 }
 
 // Load lee la configuración del entorno con valores por defecto para desarrollo.
@@ -29,6 +30,7 @@ func Load() Config {
 		CookieSecure:       getbool("COOKIE_SECURE", false),
 		SuperAdminEmail:    getenv("FARO_SUPERADMIN_EMAIL", ""),
 		SuperAdminPassword: getenv("FARO_SUPERADMIN_PASSWORD", ""),
+		UploadDir:          getenv("UPLOAD_DIR", "./uploads"),
 	}
 }
 

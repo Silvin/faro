@@ -13,5 +13,6 @@ type Product struct {
 	Name         string    `json:"name"`
 	PriceCents   int       `json:"priceCents"`
 	Status       string    `json:"status"`
+	ImageURL     *string   `json:"imageUrl"`
 	CreatedAt    time.Time `json:"createdAt"`
 }

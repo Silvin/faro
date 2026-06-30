@@ -41,6 +41,7 @@ type CreateInput struct {
 	Name       string
 	PriceCents int
 	CategoryID *string
+	ImageURL   *string
 }
 
 func (svc *Service) Create(ctx context.Context, tenantID string, in CreateInput) (Product, error) {
@@ -52,11 +53,24 @@ func (svc *Service) Create(ctx context.Context, tenantID string, in CreateInput)
 	if err != nil {
 		return Product{}, err
 	}
-	return svc.store.create(ctx, tenantID, cat, name, in.PriceCents)
+	return svc.store.create(ctx, tenantID, cat, name, in.PriceCents, normalizeURL(in.ImageURL))
+}
+
+// normalizeURL convierte cadenas vacías en nil.
+func normalizeURL(u *string) *string {
+	if u == nil || strings.TrimSpace(*u) == "" {
+		return nil
+	}
+	v := strings.TrimSpace(*u)
+	return &v
 }
 
 func (svc *Service) List(ctx context.Context, tenantID string) ([]Product, error) {
 	return svc.store.listByTenant(ctx, tenantID)
+}
+
+func (svc *Service) Get(ctx context.Context, tenantID, id string) (Product, error) {
+	return svc.store.get(ctx, tenantID, id)
 }
 
 type UpdateInput struct {
@@ -64,6 +78,7 @@ type UpdateInput struct {
 	PriceCents *int
 	CategoryID *string // nil = no cambia; valor = asigna (validado por negocio)
 	Status     *string
+	ImageURL   *string // nil = no cambia; valor = asigna
 }
 
 func (svc *Service) Update(ctx context.Context, tenantID, id string, in UpdateInput) (Product, error) {
@@ -87,5 +102,5 @@ func (svc *Service) Update(ctx context.Context, tenantID, id string, in UpdateIn
 		}
 		in.CategoryID = cat // categoría validada (o nil si venía vacía)
 	}
-	return svc.store.update(ctx, tenantID, id, in.Name, in.PriceCents, in.CategoryID, in.Status)
+	return svc.store.update(ctx, tenantID, id, in.Name, in.PriceCents, in.CategoryID, in.Status, normalizeURL(in.ImageURL))
 }
