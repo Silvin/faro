@@ -11,12 +11,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"faro/internal/auth"
+	"faro/internal/categories"
 )
 
 // New construye el handler HTTP raíz. Los módulos (auth, products, …) montarán
 // aquí sus sub-routers en incrementos siguientes. corsOrigin es el origen del
 // frontend (faro-ui) autorizado a consumir la API con credenciales.
-func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service) http.Handler {
+func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service, catSvc *categories.Service) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
@@ -51,6 +52,8 @@ func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service) http.Hand
 	// Provisión: alta de negocios (super admin) y de usuarios (acotado al negocio).
 	r.Mount("/tenants", authSvc.TenantRoutes())
 	r.Mount("/users", authSvc.UserRoutes())
+	// Módulo categorías (M2): CRUD acotado al negocio, protegido por sesión.
+	r.Mount("/categories", catSvc.Routes(authSvc.RequireSession))
 
 	return r
 }
