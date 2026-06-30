@@ -11,7 +11,7 @@ _Actualizado: 2026-06-29_
 | 2 | Diseño | product-designer | handoff completo | ✅ |
 | 3 | Tech-spec | tech-lead | contratos definidos | ✅ |
 | 4 | Tareas | project-manager | tareas atómicas | ✅ |
-| 5 | Build | backend/frontend | tests verdes | 🟡 en curso — skeleton + T1 (migración) ✅ |
+| 5 | Build | backend/frontend | tests verdes | 🟡 en curso — backend auth T1–T4 ✅ (unit verdes); falta T5–T6 + frontend |
 | 6 | QA | qa-engineer | gate PASS | ⬜ (Fase B) |
 | 7 | Review | code-reviewer | approve | ⬜ (Fase B) |
 | 8 | Deploy | devops-engineer | desplegado + observable | ⬜ (Fase C) |
@@ -32,6 +32,11 @@ _Estados de gate: ⬜ pendiente · 🟡 en curso · ✅ cumplido · 🔴 bloquea
 ## Progreso Fase B
 - ✅ Skeleton backend (`faro`): server, config, db, /health, /ready, CORS.
 - ✅ T1 migración tenants/users (up/down).
+- ✅ **T2 seed super admin** (idempotente, desde env, al arranque).
+- ✅ **T3 auth core**: bcrypt + JWT en cookie httpOnly (unit tests verdes).
+- ✅ **T4 endpoints**: POST /auth/login, POST /auth/logout, GET /auth/me + middleware `RequireSession` (tests de integración escritos; corren con DB real vía TEST_DATABASE_URL).
 - ✅ Baseline frontend (`faro-ui`): Next.js + Tailwind (BrightPOS) + cliente HTTP.
-- ⬜ **Siguiente (backend `faro`):** T2 seed super admin → T3 auth core (bcrypt+JWT) → T4 /auth + middleware tenant, con tests.
+- ⬜ **Siguiente (backend):** T5 provisión (`/tenants`, `/users`) → T6 rate limiting en login.
 - ⬜ Frontend (`faro-ui`): T7 shell → T8 login → T9 sesión → T10 provisión.
+
+> Verificado local: `go build`, `go vet`, unit tests (bcrypt+JWT) ✅. Integración pendiente de correr en CI/Docker (no había daemon en el entorno de desarrollo).

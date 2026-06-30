@@ -5,10 +5,13 @@ import "os"
 
 // Config agrupa la configuración de runtime del servicio.
 type Config struct {
-	Port        string
-	DatabaseURL string
-	JWTSecret   string
-	CORSOrigin  string // origen del frontend (faro-ui) permitido por CORS
+	Port               string
+	DatabaseURL        string
+	JWTSecret          string
+	CORSOrigin         string // origen del frontend (faro-ui) permitido por CORS
+	CookieSecure       bool   // true en prod (HTTPS); false en dev local (HTTP)
+	SuperAdminEmail    string // seed del super admin global
+	SuperAdminPassword string
 }
 
 // Load lee la configuración del entorno con valores por defecto para desarrollo.
@@ -18,6 +21,21 @@ func Load() Config {
 		DatabaseURL: getenv("DATABASE_URL", "postgres://faro:faro@localhost:5432/faro?sslmode=disable"),
 		JWTSecret:   getenv("JWT_SECRET", "dev-insecure-secret-change-me"),
 		CORSOrigin:  getenv("CORS_ORIGIN", "http://localhost:3000"),
+
+		CookieSecure:       getbool("COOKIE_SECURE", false),
+		SuperAdminEmail:    getenv("FARO_SUPERADMIN_EMAIL", ""),
+		SuperAdminPassword: getenv("FARO_SUPERADMIN_PASSWORD", ""),
+	}
+}
+
+func getbool(key string, fallback bool) bool {
+	switch os.Getenv(key) {
+	case "1", "true", "TRUE", "yes":
+		return true
+	case "0", "false", "FALSE", "no":
+		return false
+	default:
+		return fallback
 	}
 }
 

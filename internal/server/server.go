@@ -9,12 +9,14 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"faro/internal/auth"
 )
 
 // New construye el handler HTTP raíz. Los módulos (auth, products, …) montarán
 // aquí sus sub-routers en incrementos siguientes. corsOrigin es el origen del
 // frontend (faro-ui) autorizado a consumir la API con credenciales.
-func New(pool *pgxpool.Pool, corsOrigin string) http.Handler {
+func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
@@ -43,6 +45,9 @@ func New(pool *pgxpool.Pool, corsOrigin string) http.Handler {
 		}
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	})
+
+	// Módulo auth (login): /auth/login, /auth/logout, /auth/me
+	r.Mount("/auth", authSvc.Routes())
 
 	return r
 }

@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"faro/internal/auth"
 	"faro/internal/config"
 	"faro/internal/db"
 	"faro/internal/server"
@@ -25,9 +26,24 @@ func main() {
 	}
 	defer pool.Close()
 
+	authSvc := auth.NewService(pool, cfg.JWTSecret, 8*time.Hour, cfg.CookieSecure)
+
+	// Seed idempotente del super admin global (T2).
+	if cfg.SuperAdminEmail != "" && cfg.SuperAdminPassword != "" {
+		seedCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		created, err := authSvc.SeedSuperAdmin(seedCtx, cfg.SuperAdminEmail, cfg.SuperAdminPassword)
+		cancel()
+		switch {
+		case err != nil:
+			log.Printf("seed super admin: %v", err)
+		case created:
+			log.Printf("super admin global sembrado: %s", cfg.SuperAdminEmail)
+		}
+	}
+
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
-		Handler:           server.New(pool, cfg.CORSOrigin),
+		Handler:           server.New(pool, cfg.CORSOrigin, authSvc),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
