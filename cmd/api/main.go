@@ -16,6 +16,7 @@ import (
 	"faro/internal/config"
 	"faro/internal/db"
 	"faro/internal/products"
+	"faro/internal/sales"
 	"faro/internal/server"
 )
 
@@ -48,10 +49,11 @@ func main() {
 
 	catSvc := categories.NewService(pool)
 	prodSvc := products.NewService(pool)
+	salesSvc := sales.NewService(pool)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
-		Handler:           server.New(pool, cfg.CORSOrigin, authSvc, catSvc, prodSvc),
+		Handler:           server.New(pool, cfg.CORSOrigin, authSvc, catSvc, prodSvc, salesSvc),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

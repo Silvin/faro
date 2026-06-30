@@ -13,12 +13,13 @@ import (
 	"faro/internal/auth"
 	"faro/internal/categories"
 	"faro/internal/products"
+	"faro/internal/sales"
 )
 
 // New construye el handler HTTP raíz. Los módulos (auth, products, …) montarán
 // aquí sus sub-routers en incrementos siguientes. corsOrigin es el origen del
 // frontend (faro-ui) autorizado a consumir la API con credenciales.
-func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service, catSvc *categories.Service, prodSvc *products.Service) http.Handler {
+func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service, catSvc *categories.Service, prodSvc *products.Service, salesSvc *sales.Service) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
@@ -57,6 +58,8 @@ func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service, catSvc *c
 	r.Mount("/categories", catSvc.Routes(authSvc.RequireSession))
 	// Módulo productos (M3): CRUD acotado al negocio, protegido por sesión.
 	r.Mount("/products", prodSvc.Routes(authSvc.RequireSession))
+	// Módulo POS (M4): ventas, total calculado en servidor.
+	r.Mount("/sales", salesSvc.Routes(authSvc.RequireSession))
 
 	return r
 }
