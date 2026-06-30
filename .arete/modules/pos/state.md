@@ -18,6 +18,10 @@ _Actualizado: 2026-06-30_
 
 ## Ajustes (2026-06-30) — validados E2E
 - POS **tablet-friendly**: **tabs de categorías** (clic en categoría → sus productos), **buscador** en vivo y **imágenes** en el catálogo.
+- **Rediseño operativo:**
+  - POS a **pantalla completa** (sin sidebar): categorías a la izquierda + botón **Menú** para volver a la vista normal.
+  - **Forma de pago** (migración 0006: `sales.payment_method`): botones grandes Efectivo/Tarjeta antes del monto recibido. Efectivo → monto recibido + **cambio en grande**. Tarjeta → cobra el total exacto (servidor fija pagado=total, cambio=0).
+  - **Modal de cantidad** (− / +) al tocar un producto → confirma y agrega. En el listado: **Editar** (reabre modal) y **Eliminar** (modal de confirmación); sin − / + en el listado.
 
 ## Decisión clave
 - **El backend calcula el total** con los precios de SUS productos (no confía en el cliente) → seguridad.
