@@ -1,0 +1,31 @@
+# Roadmap — Faro
+_Actualizado: 2026-06-29_
+
+## Objetivo del proyecto
+Sistematizar los procesos clave de una cafetería (productos, ventas, reportes, lealtad) con un POS integrado. MVP instalable en un negocio en 4 días.
+
+## Módulos
+| #  | Módulo (slug)         | Descripción                                                                 | Estado     | Orden | Depende de |
+|----|-----------------------|-----------------------------------------------------------------------------|------------|-------|------------|
+| M1 | login                 | Autenticación de usuarios (sin roles en v1)                                  | 🟢 ready   | 1     | —          |
+| M2 | category-management   | CRUD de categorías de producto                                              | 💡 idea    | 2     | M1         |
+| M3 | product-management    | CRUD de productos (precio, categoría, estado)                               | 💡 idea    | 3     | M2         |
+| M4 | pos                   | Comanda/venta, agregar productos, cobro con cálculo de cambio, ticket       | 💡 idea    | 4     | M3         |
+| M5 | sales-reports         | Reportes diarios y por periodo, agrupados por categoría y horario           | 💡 idea    | 5     | M4         |
+| M6 | loyalty               | Alta por teléfono, puntos, tarjeta QR wallet iOS/Android, WhatsApp, redención| 💡 idea    | 6     | M3, M4     |
+
+_Estados: 💡 idea · 📋 backlog · 🔍 discovery · 🎨 design · 🟢 ready · 🔨 in-dev · 🧪 qa · 👁 review · 🚀 deployed · ✅ done_
+
+## Corte del MVP (✅ confirmado)
+- **MVP 4 días = M1 + M2 + M3 + M4** (login, categorías, productos, POS).
+- **POS v1:** online + impresora térmica ESC/POS. Migración a **offline** en fase posterior.
+- **Día 5+ (post-MVP):** M5 reportes y M6 lealtad.
+
+## Riesgos / dependencias
+- **M4 (POS):** v1 **online + impresora térmica** (decidido). Offline queda como fase posterior (impacto arquitectónico a planear por el tech-lead cuando toque migrar).
+- **M6 (lealtad):** tarjetas wallet requieren **Apple Developer (PassKit)** y **Google Wallet API**; el envío por **WhatsApp** requiere WhatsApp Business API / proveedor. Cuentas externas con onboarding y costo → **iniciar el trámite cuanto antes** para no bloquear el día 5+.
+
+## Notas
+- Documento **vivo**: se agregan/reordenan módulos sin tocar los terminados ni el charter.
+- v1 sin roles; "roles y permisos" entrará como módulo futuro.
+- "Inventario" se menciona en el objetivo: pendiente decidir si entra como módulo propio tras el MVP.

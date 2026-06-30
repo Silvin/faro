@@ -1,0 +1,22 @@
+# Node / Next.js (frontend)
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# Go (backend)
+*.exe
+*.test
+bin/
+
+# Entorno y secretos (¡nunca subir!)
+.env
+.env.*
+!.env.example
+
+# Configuración local de Claude Code
+.claude/settings.local.json
+
+# Sistema operativo
+.DS_Store
