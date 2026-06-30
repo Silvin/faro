@@ -44,6 +44,7 @@ _Estados de gate: ⬜ pendiente · 🟡 en curso · ✅ cumplido · 🔴 bloquea
 - ✅ **T9 sesión** (guard `/auth/me`, logout, redirección).
 - ✅ **T10 provisión** (`/users` listar+crear, `/tenants/new` super admin).
 - 🎉 **Login COMPLETO en código (T1–T10), backend + frontend, build verificado en ambos repos.**
-- ⬜ **Pendiente:** verificación E2E con DB real (Docker), gates de QA (test-plan) y review, luego Fase C (deploy).
+- ✅ **Validación local (2026-06-30):** suite de integración VERDE contra Postgres real (incl. aislamiento entre negocios); flujo HTTP E2E con curl OK — login→cookie→/me, crear negocio, login dueño, crear usuario, scoping por negocio, 401 (pass mala), 403 (dueño crea negocio), 429 (rate limit); **CORS cross-origin** (`:3000`→`:8080`) con `Allow-Credentials` y `Set-Cookie` verificado.
+- ⬜ **Pendiente:** confirmación visual en navegador; gates formales de QA (test-plan) y review; luego Fase C (deploy Fly.io + Neon).
 
 > Verificado local: `go build`, `go vet`, unit tests (bcrypt+JWT) ✅. Integración pendiente de correr en CI/Docker (no había daemon en el entorno de desarrollo).
