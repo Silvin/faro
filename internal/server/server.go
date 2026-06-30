@@ -48,6 +48,9 @@ func New(pool *pgxpool.Pool, corsOrigin string, authSvc *auth.Service) http.Hand
 
 	// Módulo auth (login): /auth/login, /auth/logout, /auth/me
 	r.Mount("/auth", authSvc.Routes())
+	// Provisión: alta de negocios (super admin) y de usuarios (acotado al negocio).
+	r.Mount("/tenants", authSvc.TenantRoutes())
+	r.Mount("/users", authSvc.UserRoutes())
 
 	return r
 }

@@ -17,6 +17,7 @@ type Service struct {
 	store        *store
 	tokens       *tokenManager
 	cookieSecure bool
+	loginLimiter *rateLimiter
 }
 
 // NewService construye el servicio de auth.
@@ -25,6 +26,7 @@ func NewService(pool *pgxpool.Pool, jwtSecret string, sessionTTL time.Duration, 
 		store:        newStore(pool),
 		tokens:       newTokenManager(jwtSecret, sessionTTL),
 		cookieSecure: cookieSecure,
+		loginLimiter: newRateLimiter(5, time.Minute), // T6: 5 intentos/min por IP+email
 	}
 }
 

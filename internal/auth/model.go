@@ -4,6 +4,14 @@ package auth
 
 import "time"
 
+// Tenant representa un negocio (cafetería). Aísla los datos de cada cliente.
+type Tenant struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 // User representa a un usuario del sistema. password_hash nunca se expone.
 type User struct {
 	ID           string    `json:"id"`

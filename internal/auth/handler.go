@@ -28,6 +28,12 @@ func (svc *Service) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// T6: rate limiting anti fuerza bruta (por IP + email).
+	if !svc.loginLimiter.allow(clientIP(r) + "|" + req.Email) {
+		writeError(w, http.StatusTooManyRequests, "rate_limited", "Demasiados intentos, espera un momento")
+		return
+	}
+
 	u, err := svc.authenticate(r.Context(), req.Email, req.Password)
 	if err != nil {
 		// Mensaje genérico: no revelar si el email existe.
