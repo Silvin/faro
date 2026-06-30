@@ -2,7 +2,7 @@
 _Actualizado: 2026-06-29_
 
 ## Etapa actual
-🟢 ready — **Fase A (Definición) COMPLETA · checkpoint para revisión humana**
+🔨 in-dev (Fase B) — skeleton del monorepo + migración (T1) listos y compilando (build/vet verdes)
 
 ## Pipeline (gates)
 | # | Etapa | Dueño | Gate | Estado |
@@ -11,7 +11,7 @@ _Actualizado: 2026-06-29_
 | 2 | Diseño | product-designer | handoff completo | ✅ |
 | 3 | Tech-spec | tech-lead | contratos definidos | ✅ |
 | 4 | Tareas | project-manager | tareas atómicas | ✅ |
-| 5 | Build | backend/frontend | tests verdes | ⬜ (Fase B) |
+| 5 | Build | backend/frontend | tests verdes | 🟡 en curso — skeleton + T1 (migración) ✅ |
 | 6 | QA | qa-engineer | gate PASS | ⬜ (Fase B) |
 | 7 | Review | code-reviewer | approve | ⬜ (Fase B) |
 | 8 | Deploy | devops-engineer | desplegado + observable | ⬜ (Fase C) |

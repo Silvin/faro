@@ -1,0 +1,33 @@
+# Entorno LOCAL de Faro: Postgres + backend (Go).
+# El frontend (Next.js) se añade en el siguiente incremento de Fase B.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: faro
+      POSTGRES_PASSWORD: faro
+      POSTGRES_DB: faro
+    ports:
+      - "5432:5432"
+    volumes:
+      - faro_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U faro"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      PORT: "8080"
+      DATABASE_URL: "postgres://faro:faro@db:5432/faro?sslmode=disable"
+      JWT_SECRET: "dev-insecure-secret-change-me"
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  faro_pgdata:

@@ -1,0 +1,42 @@
+// Package server arma el router HTTP y el middleware base del backend.
+package server
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+// New construye el handler HTTP raíz. Los módulos (auth, products, …) montarán
+// aquí sus sub-routers en incrementos siguientes.
+func New(pool *pgxpool.Pool) http.Handler {
+	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	// Liveness: el proceso está vivo.
+	r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	})
+
+	// Readiness: además la base de datos responde.
+	r.Get("/ready", func(w http.ResponseWriter, req *http.Request) {
+		if err := pool.Ping(req.Context()); err != nil {
+			writeJSON(w, http.StatusServiceUnavailable, map[string]string{"status": "db_unavailable"})
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]string{"status": "ready"})
+	})
+
+	return r
+}
+
+func writeJSON(w http.ResponseWriter, status int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(v)
+}
