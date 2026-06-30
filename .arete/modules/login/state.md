@@ -11,7 +11,7 @@ _Actualizado: 2026-06-29_
 | 2 | Diseño | product-designer | handoff completo | ✅ |
 | 3 | Tech-spec | tech-lead | contratos definidos | ✅ |
 | 4 | Tareas | project-manager | tareas atómicas | ✅ |
-| 5 | Build | backend/frontend | tests verdes | 🟡 en curso — **backend completo T1–T6 ✅** (unit verdes); falta frontend T7–T10 |
+| 5 | Build | backend/frontend | tests verdes | ✅ **T1–T10 completos** (backend `faro` + frontend `faro-ui`); builds y unit tests verdes |
 | 6 | QA | qa-engineer | gate PASS | ⬜ (Fase B) |
 | 7 | Review | code-reviewer | approve | ⬜ (Fase B) |
 | 8 | Deploy | devops-engineer | desplegado + observable | ⬜ (Fase C) |
@@ -39,6 +39,11 @@ _Estados de gate: ⬜ pendiente · 🟡 en curso · ✅ cumplido · 🔴 bloquea
 - ✅ **T6 rate limiting** en `/auth/login` (5/min por IP+email → 429).
 - ✅ Baseline frontend (`faro-ui`): Next.js + Tailwind (BrightPOS) + cliente HTTP.
 - 🎉 **Backend de login COMPLETO (T1–T6).**
-- ⬜ **Siguiente — Frontend (`faro-ui`):** T7 shell BrightPOS → T8 login → T9 sesión → T10 provisión.
+- ✅ **T7 shell** (sidebar + topbar BrightPOS) + design-system en código.
+- ✅ **T8 login** (`/login`, email+password, estados 401/429).
+- ✅ **T9 sesión** (guard `/auth/me`, logout, redirección).
+- ✅ **T10 provisión** (`/users` listar+crear, `/tenants/new` super admin).
+- 🎉 **Login COMPLETO en código (T1–T10), backend + frontend, build verificado en ambos repos.**
+- ⬜ **Pendiente:** verificación E2E con DB real (Docker), gates de QA (test-plan) y review, luego Fase C (deploy).
 
 > Verificado local: `go build`, `go vet`, unit tests (bcrypt+JWT) ✅. Integración pendiente de correr en CI/Docker (no había daemon en el entorno de desarrollo).
