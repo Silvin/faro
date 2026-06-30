@@ -21,6 +21,7 @@ type Sale struct {
 	TotalCents      int        `json:"totalCents"`
 	AmountPaidCents int        `json:"amountPaidCents"`
 	ChangeCents     int        `json:"changeCents"`
+	PaymentMethod   string     `json:"paymentMethod"` // cash | card
 	CreatedAt       time.Time  `json:"createdAt"`
 	Items           []SaleItem `json:"items,omitempty"`
 }

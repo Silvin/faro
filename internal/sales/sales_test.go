@@ -13,11 +13,14 @@ import (
 func TestCreateValidatesInput(t *testing.T) {
 	svc := NewService(nil)
 	ctx := context.Background()
-	if _, err := svc.Create(ctx, "t1", nil, 100); err != ErrValidation {
+	if _, err := svc.Create(ctx, "t1", nil, "cash", 100); err != ErrValidation {
 		t.Fatalf("items vacíos: esperaba ErrValidation, obtuvo %v", err)
 	}
-	if _, err := svc.Create(ctx, "t1", []LineInput{{ProductID: "p1", Quantity: 0}}, 100); err != ErrValidation {
+	if _, err := svc.Create(ctx, "t1", []LineInput{{ProductID: "p1", Quantity: 0}}, "cash", 100); err != ErrValidation {
 		t.Fatalf("cantidad 0: esperaba ErrValidation, obtuvo %v", err)
+	}
+	if _, err := svc.Create(ctx, "t1", []LineInput{{ProductID: "p1", Quantity: 1}}, "cheque", 100); err != ErrValidation {
+		t.Fatalf("forma de pago inválida: esperaba ErrValidation, obtuvo %v", err)
 	}
 }
 
@@ -54,7 +57,7 @@ func TestCreateSaleComputesTotalAndChange(t *testing.T) {
 	svc, pool, a, _, prodA, _, _, price := testSvc(t)
 	defer pool.Close()
 
-	sale, err := svc.Create(context.Background(), a, []LineInput{{ProductID: prodA, Quantity: 2}}, 10000)
+	sale, err := svc.Create(context.Background(), a, []LineInput{{ProductID: prodA, Quantity: 2}}, "cash", 10000)
 	if err != nil {
 		t.Fatalf("crear venta: %v", err)
 	}
@@ -63,6 +66,9 @@ func TestCreateSaleComputesTotalAndChange(t *testing.T) {
 	}
 	if sale.ChangeCents != 10000-price*2 {
 		t.Fatalf("cambio esperaba %d, obtuvo %d", 10000-price*2, sale.ChangeCents)
+	}
+	if sale.PaymentMethod != "cash" {
+		t.Fatalf("paymentMethod esperaba cash, obtuvo %s", sale.PaymentMethod)
 	}
 	if len(sale.Items) != 1 || sale.Items[0].UnitPriceCents != price || sale.Items[0].Quantity != 2 {
 		t.Fatalf("línea incorrecta: %+v", sale.Items)
@@ -73,8 +79,21 @@ func TestInsufficientPayment(t *testing.T) {
 	svc, pool, a, _, prodA, _, _, price := testSvc(t)
 	defer pool.Close()
 	// paga menos que el total (price*1).
-	if _, err := svc.Create(context.Background(), a, []LineInput{{ProductID: prodA, Quantity: 1}}, price-1); err != ErrInsufficientPayment {
+	if _, err := svc.Create(context.Background(), a, []LineInput{{ProductID: prodA, Quantity: 1}}, "cash", price-1); err != ErrInsufficientPayment {
 		t.Fatalf("pago insuficiente: esperaba ErrInsufficientPayment, obtuvo %v", err)
+	}
+}
+
+func TestCardPaymentSetsExactAmount(t *testing.T) {
+	svc, pool, a, _, prodA, _, _, price := testSvc(t)
+	defer pool.Close()
+	// Con tarjeta, el monto enviado se ignora: el pagado = total y cambio = 0.
+	sale, err := svc.Create(context.Background(), a, []LineInput{{ProductID: prodA, Quantity: 1}}, "card", 0)
+	if err != nil {
+		t.Fatalf("venta con tarjeta: %v", err)
+	}
+	if sale.PaymentMethod != "card" || sale.AmountPaidCents != price || sale.ChangeCents != 0 {
+		t.Fatalf("tarjeta: esperaba pagado=%d cambio=0 card, obtuvo pagado=%d cambio=%d %s", price, sale.AmountPaidCents, sale.ChangeCents, sale.PaymentMethod)
 	}
 }
 
@@ -82,10 +101,10 @@ func TestInactiveOrForeignProductRejected(t *testing.T) {
 	svc, pool, a, _, _, prodInactive, prodB, _ := testSvc(t)
 	defer pool.Close()
 	ctx := context.Background()
-	if _, err := svc.Create(ctx, a, []LineInput{{ProductID: prodInactive, Quantity: 1}}, 100000); err != ErrInvalidProduct {
+	if _, err := svc.Create(ctx, a, []LineInput{{ProductID: prodInactive, Quantity: 1}}, "cash", 100000); err != ErrInvalidProduct {
 		t.Fatalf("producto inactivo: esperaba ErrInvalidProduct, obtuvo %v", err)
 	}
-	if _, err := svc.Create(ctx, a, []LineInput{{ProductID: prodB, Quantity: 1}}, 100000); err != ErrInvalidProduct {
+	if _, err := svc.Create(ctx, a, []LineInput{{ProductID: prodB, Quantity: 1}}, "cash", 100000); err != ErrInvalidProduct {
 		t.Fatalf("producto de otro negocio: esperaba ErrInvalidProduct, obtuvo %v", err)
 	}
 }
@@ -95,7 +114,7 @@ func TestGetAndIsolation(t *testing.T) {
 	defer pool.Close()
 	ctx := context.Background()
 
-	sale, err := svc.Create(ctx, a, []LineInput{{ProductID: prodA, Quantity: 1}}, 5000)
+	sale, err := svc.Create(ctx, a, []LineInput{{ProductID: prodA, Quantity: 1}}, "cash", 5000)
 	if err != nil {
 		t.Fatalf("crear: %v", err)
 	}

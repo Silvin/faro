@@ -25,8 +25,11 @@ func NewService(pool *pgxpool.Pool) *Service {
 }
 
 // Create valida la solicitud y registra la venta (el total lo calcula el store).
-func (svc *Service) Create(ctx context.Context, tenantID string, items []LineInput, amountPaidCents int) (Sale, error) {
+func (svc *Service) Create(ctx context.Context, tenantID string, items []LineInput, paymentMethod string, amountPaidCents int) (Sale, error) {
 	if len(items) == 0 || amountPaidCents < 0 {
+		return Sale{}, ErrValidation
+	}
+	if paymentMethod != "cash" && paymentMethod != "card" {
 		return Sale{}, ErrValidation
 	}
 	for _, it := range items {
@@ -34,7 +37,7 @@ func (svc *Service) Create(ctx context.Context, tenantID string, items []LineInp
 			return Sale{}, ErrValidation
 		}
 	}
-	return svc.store.createSale(ctx, tenantID, items, amountPaidCents)
+	return svc.store.createSale(ctx, tenantID, items, paymentMethod, amountPaidCents)
 }
 
 func (svc *Service) List(ctx context.Context, tenantID string) ([]Sale, error) {
