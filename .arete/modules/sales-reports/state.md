@@ -2,7 +2,7 @@
 _Actualizado: 2026-06-30_
 
 ## Etapa actual
-🔨 in-dev (Fase B) — reportes de ventas agregados, reutiliza ventas (M4) y categorías (M2).
+👁 review ✅ — código completo (R1–R3) + E2E + **QA PASS + review approve**. Pendiente: deploy (Fase C).
 
 ## Pipeline (gates)
 | # | Etapa | Dueño | Gate | Estado |
@@ -11,9 +11,9 @@ _Actualizado: 2026-06-30_
 | 2 | Diseño | product-designer | handoff completo | ✅ (reusa shell + design-system) |
 | 3 | Tech-spec | tech-lead | contratos definidos | ✅ |
 | 4 | Tareas | project-manager | tareas atómicas | ✅ |
-| 5 | Build | backend/frontend | tests verdes | 🟡 en curso |
-| 6 | QA | qa-engineer | gate PASS | ⬜ |
-| 7 | Review | code-reviewer | approve | ⬜ |
+| 5 | Build | backend/frontend | tests verdes | ✅ **R1–R3 completos** (backend + `/reports`); E2E validado |
+| 6 | QA | qa-engineer | gate PASS | ✅ **PASS** — `qa/test-plan.md` |
+| 7 | Review | code-reviewer | approve | ✅ **approve** — `reviews/review.md` |
 | 8 | Deploy | devops-engineer | desplegado + observable | ⬜ |
 
 ## Reutiliza
