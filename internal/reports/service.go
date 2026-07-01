@@ -1,0 +1,20 @@
+package reports
+
+import (
+	"context"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type Service struct {
+	store *store
+}
+
+func NewService(pool *pgxpool.Pool) *Service {
+	return &Service{store: newStore(pool)}
+}
+
+func (svc *Service) SalesReport(ctx context.Context, tenantID string, from, to time.Time, tzMinutes int) (SalesReport, error) {
+	return svc.store.salesReport(ctx, tenantID, from, to, tzMinutes)
+}
